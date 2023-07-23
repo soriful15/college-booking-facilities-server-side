@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const port = process.env.PORT || 5000;
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 // middleware
 require('dotenv').config()
 app.use(cors());
@@ -43,7 +43,32 @@ async function run() {
   res.send(result)
 })
 
+app.get('/allCollection/:id', async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) }
+  const singleCollege = await collageBookingData.findOne(query)
+  res.send(singleCollege)
+})
 
+
+
+
+ // search
+ const indexKeys = { name: 1 }
+ const indexOptions = { name: 'name' }
+ const result = await collageBookingData.createIndex(indexKeys, indexOptions);
+
+ app.get('/collegeSearch/:text', async (req, res) => {
+   const searchText = req.params.text
+   const result = await collageBookingData.find({
+
+     $or: [
+       { name: { $regex: searchText, $options: 'i' } }
+     ]
+   }).toArray()
+
+   res.send(result)
+ })
 
 
 
